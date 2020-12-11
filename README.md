@@ -1,7 +1,5 @@
 # Automatic Model Evolution
 
-![AI Melts ICE](image.png)
-
 Small-scale experiments evolving optimal ML models for ICE raid predictions.
 
 El pueblo unido jamás será vencido.
