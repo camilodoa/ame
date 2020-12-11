@@ -14,12 +14,6 @@ Download our Python dependencies.
 pip3 install -r requirements
 ```
 
-Start the REST API.
-
-```bash
-python3 main.py
-```
-
 Download the Syracuse TRAC ICE Arrests dataset *(optional)*:
 
 ```bash
@@ -32,7 +26,7 @@ Train a ML model *(optional)*:
 python3 ai.py
 ```
 
-Evolve an optimal ML model *(optional but fun)*:
+Evolve an optimal ML model:
 
 ```bash
 python3 evolve.py
@@ -54,10 +48,6 @@ The backend is divided up into a number of files:
 - `evolve.py`
 
 > Leverages evolution to find the optimal model by evolving a population of deep learning models with a low test error.
-
-- `main.py`
-
-> Starts a RESTful API that serves the data in `predictions.csv`
 
 ### Dependencies:
 
