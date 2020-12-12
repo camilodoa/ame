@@ -285,6 +285,7 @@ class AutomaticModelEvolution():
             if self.verbose: print("Loading", individuals + previous)
             # Load all of genome from individual except for model layers
             ancestor = pickle.load(input)
+            print(ancestor)
             # Load model from model folder
             previous_model = load_model(models + previous[:-7] + '.h5')
             # Update ancestor with middle layers (All but input/output)
@@ -394,7 +395,7 @@ if __name__ == '__main__':
     'Usage'
     # Run until we get a good solution or until we reach generation 15
     # Or get an error on testing that is less than 1
-    world = AutomaticModelEvolution(size = 5, generations = 15, ancestor = False,
-        target = 90, verbose=0)
+    world = AutomaticModelEvolution(size = 10, generations = 15, ancestor = False,
+        target = 20, verbose=1)
     world.run()
     world.save()
