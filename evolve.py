@@ -1,4 +1,4 @@
-from ai import Model
+from model import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, SimpleRNN, GRU
 from tensorflow.keras.models import load_model
@@ -16,14 +16,23 @@ class AutomaticModelEvolution():
     '''
     # Constructor ##############################################################
     def __init__(self, size = 10, generations = 50, ancestor = False,
-        target = 110, verbose = 0):
+        target = 110, mutation = 0.3, addition_rate = 0.2, deletion_rate = 0.2,
+        layer_options = {'Dense': Dense, 'LSTM': LSTM, 'SimpleRNN' : SimpleRNN,
+        'GRU' : GRU}, verbose = 0):
         '''
         Constructor
         Arguments:
-            size: number of individuals
-            generations: number of iterations to run
-            ancestor: whether to add previous minima to population
-            target: target error on testing
+            size: Int: number of individuals
+            generations: Int: number of iterations to run
+            ancestor: Boolean: whether to add previously found optimal model
+                                to population
+            target: Float: target error to reach
+            mutation: Float 0-1: mutation frequency
+            addition_rate: Float 0-1: new layer addition frequency for every model
+            deletion_rate: Float 0-1: layer removal frequency for every model
+            layer_options: Dict: {name: object} dict of available layer types
+            verbose: Bool as 0,1 : whether to use additional debugging print statement
+
         Initializes field variables
         '''
         # Population attributes
@@ -47,12 +56,11 @@ class AutomaticModelEvolution():
         self.ancestor = ancestor
         # Genome attributes
         # Mutation probabilities
-        self.mutation = 0.3
-        self.addition_rate = 0.2
-        self.deletion_rate = 0.2
+        self.mutation = mutation
+        self.addition_rate = addition_rate
+        self.deletion_rate = deletion_rate
         # Layer possibilities
-        self.layer_options = {'Dense': Dense, 'LSTM': LSTM,
-            'SimpleRNN' : SimpleRNN, 'GRU' : GRU}
+        self.layer_options = layer_options
         self.activation_functions = ['relu', 'tanh', 'sigmoid', 'softmax']
         # Model parameters
         self.optimizer_options = ['Adam', 'SGD', 'RMSprop', 'Adadelta',
@@ -395,7 +403,6 @@ if __name__ == '__main__':
     'Usage'
     # Run until we get a good solution or until we reach generation 15
     # Or get an error on testing that is less than 1
-    world = AutomaticModelEvolution(size = 10, generations = 15, ancestor = False,
-        target = 20, verbose=1)
+    world = AutomaticModelEvolution()
     world.run()
     world.save()

@@ -20,12 +20,9 @@ class Model():
     Also takes in the path to a time-series Pandas dataset, with an attribute
     labeled "Date".
     '''
-    def __init__(self, t = 12, split = 0.70, epochs = 1000,
-                neurons = 100,
-                layers = [
-                    LSTM(200)
-                ], optimizer = 'adam', loss = 'mse', verbose = 0,
-                dataset='data.csv'):
+    def __init__(self, t = 12, split = 0.70, epochs = 1000, neurons = 100,
+                layers = [LSTM(200)], optimizer = 'adam', loss = 'mse',
+                verbose = 0, dataset='data.csv'):
         '''
         Initialize class variables for network training
         '''
@@ -175,6 +172,6 @@ class Model():
 
 if __name__ == '__main__':
     'Usage'
-    primis = Model(verbose=1)
+    primis = Model()
     primis.fit()
     # a.predict_forward(12, 2021)

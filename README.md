@@ -1,10 +1,8 @@
 # Automatic Model Evolution
 
-Small-scale experiments evolving optimal ML models for ICE raid predictions.
+Evolving ML models for ICE raid predictions.
 
-El pueblo unido jamás será vencido.
-
-### Getting started
+## Getting started
 
 Download [Python3](https://www.python.org/downloads/).
 
@@ -14,40 +12,44 @@ Download our Python dependencies.
 pip3 install -r requirements
 ```
 
-Download the Syracuse TRAC ICE Arrests dataset *(optional)*:
-
-```bash
-python3 datasetgenerator.py
-```
-
-Train a ML model *(optional)*:
-
-```bash
-python3 ai.py
-```
-
-Evolve an optimal ML model:
+Evolve an optimal ML model on data.csv *(cool)*:
 
 ```bash
 python3 evolve.py
 ```
 
-### Structure
+Train a single ML model on data.csv *(boring)*:
 
-The backend is divided up into a number of files:
+```bash
+python3 model.py
+```
 
-- `datasetgenerator.py`
+## Files
 
->  Uses its `Syracuse` class to create a dataset of ICE arrests in the US and saves it to `data.csv`.
+### `evolve.py`
 
-- `ai.py`
+> Leverages evolution to find the optimal model on ICE raid time-series
+predictions by generating a population of deep learning models, assigning them a
+fitness according to their test loss and recombining them to create a next
+generation of models.
 
-> Builds and trains an LSTM model on `data.csv`. It uses the model and dataset to predict future arrests and saves them to `predictions.csv`.
+The entry point of the application. To use AME, initialize it:
 
+```Python
+ame = AutomaticModelEvolution()
+ame.run()
+ame.save()
+```
 
-- `evolve.py`
+### `model.py`
 
-> Leverages evolution to find the optimal model by evolving a population of deep learning models with a low test error.
+> Builds and trains an LSTM model on `data.csv` given its parameters.
+Is serializable into a mutatable object.
+
+```Python
+model = Model()
+model.fit()
+```
 
 ### Dependencies:
 
