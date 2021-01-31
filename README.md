@@ -1,6 +1,7 @@
 # Automatic Model Evolution
 
-Evolving ML models for ICE raid predictions.
+Evolving ML models for ICE raid predictions. Models are an extra layer of
+abstraction on top of [Keras](https://keras.io/).
 
 ## Getting started
 
@@ -33,12 +34,31 @@ predictions by generating a population of deep learning models, assigning them a
 fitness according to their test loss and recombining them to create a next
 generation of models.
 
+Arguments:
+- size: Int: number of individuals
+
+- generations: Int: number of iterations to run
+
+- ancestor: Boolean: whether to add previously found optimal model to population
+
+- target: Float: target error to reach
+
+- mutation: Float 0-1: mutation frequency
+
+- addition_rate: Float 0-1: new layer addition frequency for every model
+
+- deletion_rate: Float 0-1: layer removal frequency for every model
+
+- layer_options: Dict: {name: object} dict of available layer types
+
+- verbose: Bool as 0,1 : whether to use additional debugging print statement
+
+
 The entry point of the application. To use AME, initialize it:
 
 ```Python
 ame = AutomaticModelEvolution()
-ame.run()
-ame.save()
+fittest = ame.run()
 ```
 
 ### `model.py`
@@ -48,7 +68,7 @@ Is serializable into a mutatable object.
 
 ```Python
 model = Model()
-model.fit()
+history = model.fit()
 ```
 
 ### Dependencies:
@@ -58,5 +78,5 @@ model.fit()
 - Flask
 - geopy
 - keras==2.2.5
-- Tensorflow==2.0.1
+- tensorflow==2.0.1
 - progress

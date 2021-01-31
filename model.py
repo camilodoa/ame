@@ -20,17 +20,18 @@ class Model():
     Also takes in the path to a time-series Pandas dataset, with an attribute
     labeled "Date".
     '''
-    def __init__(self, t = 12, split = 0.70, epochs = 1000, neurons = 100,
-                layers = [LSTM(200)], optimizer = 'adam', loss = 'mse',
-                verbose = 0, dataset='data.csv'):
+    def __init__(self, t = 12, split = 0.70, epochs = 1000, neurons = 8000,
+                layers = [], optimizer = 'adam', loss = 'mse',
+                verbose = 1, dataset='data.csv'):
         '''
         Initialize class variables for network training
         '''
         # Initialize dataset generator class
-        g = Generator()
+        self.g = Generator()
+
         self.dataset = dataset
         # Read in dataset into pandas DataFrame object
-        df = pd.read_csv(dataset, infer_datetime_format = True, parse_dates = ['Date'])
+        df = self.g.load_dataset(parse_dates = True)
         # Sort values by date (earliest dates first)
         df = df.sort_values('Date').drop(['Date'], axis = 1)
         self.final = split == 1
@@ -38,18 +39,20 @@ class Model():
             self.split = 1
             train = df.iloc[:]
             # Split dataset into X Y pairs
-            self.X_train, self.Y_train = g.split(train, t)
+            self.X_train, self.Y_train = self.g.split(train, t)
         else:
             # Split into test and training
             self.split = split
             # Split
             train, test = df.iloc[0:int(len(df) * self.split)], df.iloc[int(len(df) * self.split):len(df)]
             # Split dataset into X Y pairs
-            self.X_train, self.Y_train = g.split(train, t)
-            self.X_test, self.Y_test = g.split(test, t)
+            self.X_train, self.Y_train = self.g.split(train, t)
+            self.X_test, self.Y_test = self.g.split(test, t)
 
-        # Define self.output_size layer size
-        self.output_size = self.X_train.shape[2]
+        # Define input layer shape
+        self.input_shape = (self.X_train.shape[1], self.X_train.shape[2])
+        # Just output arrests
+        self.output_shape = self.Y_train.shape[1]
         # Parameters
         # Each prediction will be based on t data points before it
         self.t = t
@@ -71,16 +74,16 @@ class Model():
 
         # Define the model
         self.model = Sequential()
-        # Define the self.model's input's shape
-        input_shape = (self.t, self.output_size)
         # Add the first LSTM layer with an input shape of t for each county
-        self.model.add(LSTM(self.neurons, return_sequences = True, input_shape = input_shape))
+        self.model.add(LSTM(self.neurons,  activation = 'tanh', recurrent_activation='sigmoid',
+            return_sequences = True, input_shape = self.input_shape))
         if self.verbose: bar.next()
         # Add customizable layers
         for layer in self.layers:
             self.model.add(layer)
             if self.verbose: bar.next()
         # Output layer
+        self.model.add(LSTM(2000, activation = 'tanh', recurrent_activation='sigmoid'))
         self.model.add(Dense(self.output_size))
         if self.verbose: bar.next()
         # Compile the model
@@ -99,7 +102,8 @@ class Model():
         if self.model is None: self.model = self.build()
         self.history = History()
         self.history = self.model.fit(self.X_train, self.Y_train,
-            epochs = self.epochs, callbacks=[self.history], verbose=self.verbose)
+            epochs = self.epochs, batch_size = 32, verbose = self.verbose,
+            validation_split = 0.2)
         # Assign fitness
         if self.final:
             self.error = self.history.history['loss'][-1]
@@ -143,7 +147,7 @@ class Model():
         # Generate predictions for each month in difference
         for i in range(diff):
             # Convert last 12 months into data
-            data = g.convert(predictions_df, self.t, -self.t, 0)
+            data = self.g.convert(predictions_df, self.t, -self.t, 0)
             # Use data to predict with the model
             predictions = self.model.predict(data)
             # Update current prediction date

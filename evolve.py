@@ -8,6 +8,7 @@ import random
 from os import listdir
 from os.path import isfile, join
 from progress.bar import Bar
+import matplotlib.pyplot as plt
 
 class AutomaticModelEvolution():
     '''
@@ -54,6 +55,7 @@ class AutomaticModelEvolution():
         self.natality = 2
         # Whether we are incorporating an ancestor into the population
         self.ancestor = ancestor
+        self.records = []
         # Genome attributes
         # Mutation probabilities
         self.mutation = mutation
@@ -101,7 +103,6 @@ class AutomaticModelEvolution():
             learner = Model(t = random.randint(self.min_t, self.max_t),
                 split = random.uniform(self.min_split, self.max_split),
                 epochs = random.randint(self.min_epochs, self.max_epochs),
-                neurons = random.randint(self.min_neurons, self.max_neurons),
                 layers = self.generate_layers(random.randint(self.min_num_layers, self.max_num_layers)),
                 optimizer = random.choice(self.optimizer_options),
                 loss = random.choice(self.loss_options),
@@ -112,6 +113,7 @@ class AutomaticModelEvolution():
             except KeyboardInterrupt:
                 raise
             except Exception as e:
+                print(e)
                 continue
         return learner
 
@@ -197,12 +199,19 @@ class AutomaticModelEvolution():
         '''
         layers = []
         for i in range(num_layers):
-            neurons = random.randint(20, 1000)
+            neurons = random.randint(1000, 10000)
             layer = random.choice(list(self.layer_options.values()))
             # If the layer is Dense, we get to pick our own activation function
             if layer.__class__.__name__ == 'Dense':
                 activation = random.choice(self.activation_functions)
-                layers.append(layer(neurons, activation))
+                layers.append(layer(neurons, activation = activation))
+            if layer.__class__.__name__ == 'LSTM':
+                activation = 'tanh'
+                recurrent_activation = 'sigmoid'
+                return_sequences = True
+                layers.append(layer(neurons, activation = activation,
+                    recurrent_activation = recurrent_activation,
+                    return_sequences = return_sequences))
             # Otherwise, use the default
             else: layers.append(layer(neurons))
         return layers
@@ -359,9 +368,11 @@ class AutomaticModelEvolution():
     # I/O ######################################################################
     def report(self):
         '''
-        Print generation information
+        Print generation information and add all population fitnesses to the
+        self.records array
         '''
         fittest = self.fittest()
+        self.reports.append([ind.fit() for ind in self.population])
         print("At generation {0} the best error was {1}".format(self.generation,
             fittest.fit(type = self.fitness)))
         if self.verbose: fittest.model.summary()
@@ -390,6 +401,15 @@ class AutomaticModelEvolution():
             self.generation += 1
             self.repopulate()
             fittest = self.report()
+            self.save()
+        if self.verbose:
+            # Plot generation fitnesses
+            plt.plot([i for i in range(1, self.generation + 1)], self.records)
+            plt.title('generation fitnesses')
+            plt.ylabel('fitness')
+            plt.xlabel('generation')
+            plt.show()
+
         return self.fittest()
 
     def predict(self, month, year):
@@ -403,6 +423,6 @@ if __name__ == '__main__':
     'Usage'
     # Run until we get a good solution or until we reach generation 15
     # Or get an error on testing that is less than 1
-    world = AutomaticModelEvolution()
-    world.run()
-    world.save()
+    world = AutomaticModelEvolution(size=4, generations=5, ancestor=False,
+        target=150, verbose=1)
+    fittest = world.run()
