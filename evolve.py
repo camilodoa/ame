@@ -18,8 +18,8 @@ class AutomaticModelEvolution():
     # Constructor ##############################################################
     def __init__(self, size = 10, generations = 50, ancestor = False,
         target = 110, mutation = 0.3, addition_rate = 0.2, deletion_rate = 0.2,
-        layer_options = {'Dense': Dense, 'LSTM': LSTM, 'SimpleRNN' : SimpleRNN,
-        'GRU' : GRU}, verbose = 0):
+        layer_options = {'Dense': Dense, 'LSTM': LSTM, 'SimpleRNN' : SimpleRNN},
+        verbose = 0):
         '''
         Constructor
         Arguments:
@@ -313,7 +313,7 @@ class AutomaticModelEvolution():
         '''
         Create initial population
         '''
-        bar = Bar('Initializing population',  fill='=', max=self.capacity)
+        bar = Bar('\nInitializing population',  fill='=', max=self.capacity)
         # Add best previously found individual
         if self.ancestor:
             # Add ancestor to population
