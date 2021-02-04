@@ -410,13 +410,13 @@ class AutomaticModelEvolution():
             self.generation += 1
             self.repopulate()
             fittest = self.report()
-        if self.verbose:
-            # Plot generation fitnesses
-            plt.plot([i for i in range(1, self.generation + 1)], self.records)
-            plt.title('generation fitnesses')
-            plt.ylabel('fitness')
-            plt.xlabel('generation')
-            plt.show()
+            
+        # Plot generation fitnesses
+        plt.plot([i for i in range(1, self.generation + 1)], self.records)
+        plt.title('generation fitnesses')
+        plt.ylabel('fitness')
+        plt.xlabel('generation')
+        plt.show()
 
         self.save()
         return self.fittest()
