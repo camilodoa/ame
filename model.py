@@ -22,7 +22,7 @@ class Model():
     '''
     def __init__(self, t = 12, split = 0.70, epochs = 1000, neurons = 8000,
                 layers = [], optimizer = 'adam', loss = 'mse',
-                verbose = 1, dataset='data.csv'):
+                verbose = 1, dataset='dataset.csv'):
         '''
         Initialize class variables for network training
         '''
@@ -70,25 +70,20 @@ class Model():
         '''
         Build a Keras LSTM network with three layers: LSTM, LSTM, Dense
         '''
-        if self.verbose: bar = Bar('Building model', fill='=', max=len(self.layers) + 2)
-
+        print('\nBuilding individual model')
         # Define the model
         self.model = Sequential()
         # Add the first LSTM layer with an input shape of t for each county
         self.model.add(LSTM(self.neurons,  activation = 'tanh', recurrent_activation='sigmoid',
             return_sequences = True, input_shape = self.input_shape))
-        if self.verbose: bar.next()
         # Add customizable layers
         for layer in self.layers:
             self.model.add(layer)
-            if self.verbose: bar.next()
         # Output layer
         self.model.add(LSTM(2000, activation = 'tanh', recurrent_activation='sigmoid'))
-        self.model.add(Dense(self.output_size))
-        if self.verbose: bar.next()
+        self.model.add(Dense(self.output_shape))
         # Compile the model
         self.model.compile(optimizer = self.optimizer, loss = self.loss)
-        if self.verbose: bar.finish()
         # Get description
         if self.verbose: self.model.summary()
         return self.model

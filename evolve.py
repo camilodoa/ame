@@ -1,3 +1,5 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from model import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, SimpleRNN, GRU
@@ -18,7 +20,7 @@ class AutomaticModelEvolution():
     # Constructor ##############################################################
     def __init__(self, size = 10, generations = 50, ancestor = False,
         target = 110, mutation = 0.3, addition_rate = 0.2, deletion_rate = 0.2,
-        layer_options = {'Dense': Dense, 'LSTM': LSTM, 'SimpleRNN' : SimpleRNN},
+        layer_options = {'Dense': Dense, 'LSTM': LSTM},
         verbose = 0):
         '''
         Constructor
@@ -78,8 +80,9 @@ class AutomaticModelEvolution():
         self.max_epochs = 1500
         self.min_num_layers = 0
         self.max_num_layers = 15
-        self.min_neurons = 32
-        self.max_neurons = 1000
+        self.min_neurons = 500
+        self.max_neurons = 10000
+        self.reports = []
         # Types of mutations
         self.mutations = { 't' : self.delta_t, 'split' : self.delta_split,
             'epochs' : self.delta_epochs, 'neurons' : self.delta_neurons,
@@ -100,13 +103,19 @@ class AutomaticModelEvolution():
         # Loop until a viable individual is created
         viable = False
         while not viable:
-            learner = Model(t = random.randint(self.min_t, self.max_t),
-                split = random.uniform(self.min_split, self.max_split),
-                epochs = random.randint(self.min_epochs, self.max_epochs),
-                layers = self.generate_layers(random.randint(self.min_num_layers, self.max_num_layers)),
-                optimizer = random.choice(self.optimizer_options),
-                loss = random.choice(self.loss_options),
-                verbose = self.verbose)
+            t = random.randint(self.min_t, self.max_t)
+            split = random.uniform(self.min_split, self.max_split)
+            epochs = random.randint(self.min_epochs, self.max_epochs)
+            layers = self.generate_layers(random.randint(self.min_num_layers, self.max_num_layers))
+            optimizer = random.choice(self.optimizer_options)
+            loss = random.choice(self.loss_options)
+            verbose = self.verbose
+
+            # print("\nLearner summary")
+            # print("t = {0}, split = {1}, epochs = {2}, layers = {3}, optimizer = {4}, loss = {5}, verbose = {6})".format(t, split, epochs, layers, optimizer, loss, verbose))
+            learner = Model(t = t, split = split, epochs = epochs,
+                layers = layers, optimizer = optimizer, loss = loss,
+                verbose = verbose)
             try:
                 learner.fit(type = self.fitness)
                 viable = True
@@ -401,7 +410,6 @@ class AutomaticModelEvolution():
             self.generation += 1
             self.repopulate()
             fittest = self.report()
-            self.save()
         if self.verbose:
             # Plot generation fitnesses
             plt.plot([i for i in range(1, self.generation + 1)], self.records)
@@ -410,6 +418,7 @@ class AutomaticModelEvolution():
             plt.xlabel('generation')
             plt.show()
 
+        self.save()
         return self.fittest()
 
     def predict(self, month, year):
@@ -423,6 +432,6 @@ if __name__ == '__main__':
     'Usage'
     # Run until we get a good solution or until we reach generation 15
     # Or get an error on testing that is less than 1
-    world = AutomaticModelEvolution(size=4, generations=5, ancestor=False,
-        target=150, verbose=1)
+    world = AutomaticModelEvolution(size=5, generations=5, ancestor=False,
+        target=150, verbose=0)
     fittest = world.run()
